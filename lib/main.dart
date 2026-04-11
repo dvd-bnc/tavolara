@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tavolara/config.dart';
@@ -76,7 +77,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 enum SizeVariant {
-  tiny(30),
+  tiny(60),
   small(120),
   medium(300),
   full(600);
@@ -113,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       (foregroundColor.g * 255).toInt(),
       (foregroundColor.b * 255).toInt(),
     ),
-    strokeClasses: {.thinner: 2, .thin: 4, .thick: 6, .thicker: 8},
+    strokeClasses: {.thinner: 3, .thin: 4, .thick: 6, .thicker: 8, .thickest: 10},
   );
 
   Configuration get _config => configOverride.patch(
@@ -245,7 +246,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             alignment: .centerEnd,
             axis: .horizontal,
             child: Drawer(
-              width: 480,
+              width: MediaQuery.of(context).size.width / 4,
               elevation: 48,
               shadowColor: Colors.black,
               child: ListView(
@@ -281,13 +282,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   buildModeTile(title: "Outer radius", property: configOverride.outerRadius),
                   buildHeader("Petal"),
                   buildModeTile(title: "Petal style", property: configOverride.petalStyle),
-                  buildModeTile(title: "Star points", property: configOverride.starPoints),
+                  buildModeTile(title: "Petal count", property: configOverride.petalCount),
                   buildModeTile(
-                    title: "Star outer radius",
-                    property: configOverride.starOuterRadius,
+                    title: "Petal outer radius",
+                    property: configOverride.petalOuterRadius,
                   ),
-                  buildModeTile(title: "Star spacing", property: configOverride.starSpacing),
-                  buildModeTile(title: "Star rotation", property: configOverride.starAngle),
+                  buildModeTile(
+                    title: "Petal disk distance",
+                    property: configOverride.petalDiskDistance,
+                  ),
+                  buildModeTile(title: "Petal rotation", property: configOverride.petalAngle),
                   buildModeTile(
                     title: "Generate star ring",
                     property: configOverride.generateStarRing,
@@ -330,6 +334,29 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           child: GridPaper(color: Color(0xFF323232), divisions: 1),
                         ),
                       ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  right: 16,
+                  height: 56,
+                  child: Center(
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'giardini ',
+                            style: GoogleFonts.geist(fontWeight: FontWeight.w300),
+                          ),
+                          TextSpan(
+                            text: 'generativi',
+                            style: GoogleFonts.geist(fontWeight: FontWeight.normal),
+                          ),
+                        ],
+                      ),
+                      style: TextStyle(fontSize: 32, letterSpacing: -0.6),
                     ),
                   ),
                 ),
@@ -536,11 +563,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     mainAxisSize: .min,
                     spacing: 16,
                     children: [
-                      FloatingActionButton.small(
-                        tooltip: "Refresh sketch",
-                        onPressed: () => sketch.p5.redraw(),
-                        child: const Icon(Icons.refresh),
-                      ),
+                      if (kDebugMode)
+                        FloatingActionButton.small(
+                          tooltip: "Refresh sketch",
+                          onPressed: () => sketch.p5.redraw(),
+                          child: const Icon(Icons.refresh),
+                        ),
                       FloatingActionButton(
                         tooltip: "Download logo (SVG)",
                         onPressed: () => sketch.save(seedController.text),
