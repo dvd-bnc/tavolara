@@ -47,8 +47,6 @@ extension type P5._(JSObject _) implements JSObject {
   @JS('color')
   external P5Color colorHex(String hex);
 
-  external P5Vector createVector(num x, num y);
-
   external void noLoop();
   external void redraw();
   external void save(String name);
@@ -102,17 +100,6 @@ extension type P5._(JSObject _) implements JSObject {
 }
 
 extension type P5Color._(JSObject _) implements JSObject {}
-@JS("p5.Vector")
-extension type P5Vector._(JSObject _) implements JSObject {
-  external factory P5Vector([num? x, num? y, num? z]);
-
-  external double x;
-  external double y;
-
-  external void mult(num x, [num? y, num? z]);
-
-  external P5Vector copy();
-}
 
 extension HTMLElementExt on web.HTMLElement {
   @JS('style')

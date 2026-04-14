@@ -320,8 +320,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               (option: .spikes, title: "Spikes"),
               (option: .narrowSpikes, title: "Narrow spikes"),
               (option: .sharp, title: "Petals (sharp)"),
-              (option: .round, title: "Petals (round)"),
-              //  (option: .circular, title: "Petals (circular)"),
             ],
           ),
         ),
@@ -349,16 +347,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           title: "Generate star ring",
           property: configOverride.generateStarRing,
           options: FlagOverridePropertyOptions(),
-        ),
-        buildModeTile(
-          title: "Double outline",
-          property: configOverride.doubleOutline,
-          options: FlagOverridePropertyOptions(),
-        ),
-        buildModeTile(
-          title: "Double outline spacing",
-          property: configOverride.doubleOutlineSpacing,
-          options: RangedDoubleOverridePropertyOptions(min: 0, max: 200),
         ),
         buildHeader("Sepal"),
         buildModeTile(
@@ -389,7 +377,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           options: ChoiceOverridePropertyOptions<HaloStyle>(
             options: [
               (option: .ring, title: "Ring"),
-              (option: .petal, title: "Petal"),
               (option: .contraPetal, title: "Contrapetal"),
               (option: .gear, title: "Gear"),
               (option: .hatching, title: "Hatching"),

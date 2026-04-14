@@ -13,11 +13,11 @@ class Style {
   const Style({required this.backgroundColor, required this.color, required this.strokeClasses});
 }
 
-enum PetalStyle { spikes, narrowSpikes, round, sharp /* circular */ }
+enum PetalStyle { spikes, narrowSpikes, sharp }
 
 enum SepalStyle { none, dots, mandala }
 
-enum HaloStyle { ring, gear, petal, contraPetal, hatching }
+enum HaloStyle { ring, gear, contraPetal, hatching }
 
 class Configuration {
   final double size;
@@ -30,8 +30,6 @@ class Configuration {
   final double petalDiskDistance;
   final double petalAngle;
   final bool generatePetalRing;
-  final bool doubleOutline;
-  final double doubleOutlineSpacing;
 
   final SepalStyle sepalStyle;
   final double sepalDistanceOffset;
@@ -52,8 +50,6 @@ class Configuration {
     required this.petalDiskDistance,
     required this.petalAngle,
     required this.generatePetalRing,
-    required this.doubleOutline,
-    required this.doubleOutlineSpacing,
 
     required this.sepalStyle,
     required this.sepalDistanceOffset,
@@ -81,9 +77,6 @@ class Configuration {
       PetalStyle.values[random.nextInt(PetalStyle.values.length)],
       override?.petalStyle,
     );
-    final doubleOutline = false; //withOverride(random.nextDouble() > 0.7, override?.doubleOutline);
-    final doubleOutlineSpacing = 0.0;
-    // withOverride(random.nextDoubleRange(50, 80), override?.doubleOutlineSpacing);
     final generateStarRing = withOverride(
       petalStyle == .narrowSpikes || random.nextDouble() > 0.8,
       override?.generateStarRing,
@@ -96,10 +89,7 @@ class Configuration {
     final ringDotsSize = withOverride(random.nextDoubleRange(8, 16), override?.sepalDotsSize);
 
     final starPoints = withOverride(random.nextIntRange(8, 13), override?.petalCount);
-    final starOuterRadius = withOverride(
-      /* doubleOutline ? size - doubleOutlineSpacing : */ size,
-      override?.petalOuterRadius,
-    );
+    final starOuterRadius = withOverride(size, override?.petalOuterRadius);
     final starSpacing = withOverride(
       petalStyle != .narrowSpikes && (diskConfig.radius < 40 || random.nextDouble() > 0.5)
           ? random.nextDoubleRange(20, starOuterRadius - diskConfig.radius - 60)
@@ -115,7 +105,10 @@ class Configuration {
       HaloStyle.values[random.nextInt(HaloStyle.values.length)],
       override?.haloStyle,
     );
-    final haloElementCount = withOverride(random.nextIntRange(10, 32), override?.haloElementCount);
+    final haloElementCount = withOverride(
+      random.nextIntRange(haloStyle == .contraPetal ? 16 : 10, 32),
+      override?.haloElementCount,
+    );
     final haloRotation = withOverride(
       random.nextDoubleRange(0, pi * 2 / haloElementCount),
       override?.haloRotation,
@@ -125,8 +118,6 @@ class Configuration {
       size: size,
       diskConfig: diskConfig,
       petalStyle: petalStyle,
-      doubleOutline: doubleOutline,
-      doubleOutlineSpacing: doubleOutlineSpacing,
       generatePetalRing: generateStarRing,
       petalCount: starPoints,
       petalOuterRadius: starOuterRadius,
@@ -150,8 +141,6 @@ class Configuration {
       'starOuterRadius': petalOuterRadius,
       'starSpacing': petalDiskDistance,
       'starAngle': petalAngle,
-      'doubleOutline': doubleOutline,
-      'doubleOutlineSpacing': doubleOutlineSpacing,
       'generateStarRing': generatePetalRing,
       'sepalStyle': sepalStyle,
       'sepalDistanceOffset': sepalDistanceOffset,
@@ -206,8 +195,6 @@ class ConfigurationOverride {
   // final OverrideProperty<CoreConfiguration> coreConfig;
   final OverrideProperty<double> outerRadius;
   final OverrideProperty<PetalStyle> petalStyle;
-  final OverrideProperty<bool> doubleOutline;
-  final OverrideProperty<double> doubleOutlineSpacing;
   final OverrideProperty<bool> generateStarRing;
   final OverrideProperty<int> petalCount;
   final OverrideProperty<double> petalOuterRadius;
@@ -241,8 +228,6 @@ class ConfigurationOverride {
     OverrideProperty<double>? haloRotation,
   }) : outerRadius = outerRadius ?? .new(value: 0),
        petalStyle = petalStyle ?? .new(value: .spikes),
-       doubleOutline = doubleOutline ?? .new(value: false),
-       doubleOutlineSpacing = doubleOutlineSpacing ?? .new(value: 0),
        generateStarRing = generateStarRing ?? .new(value: false),
        petalCount = starPoints ?? .new(value: 3),
        petalOuterRadius = starOuterRadius ?? .new(value: 0),
@@ -260,10 +245,6 @@ class ConfigurationOverride {
       size: other.size,
       diskConfig: /* coreConfig.mode == .patch ? coreConfig.value :  */ other.diskConfig,
       petalStyle: petalStyle.mode == .patch ? petalStyle.value : other.petalStyle,
-      doubleOutline: doubleOutline.mode == .patch ? doubleOutline.value : other.doubleOutline,
-      doubleOutlineSpacing: doubleOutlineSpacing.mode == .patch
-          ? doubleOutlineSpacing.value
-          : other.doubleOutlineSpacing,
       generatePetalRing: generateStarRing.mode == .patch
           ? generateStarRing.value
           : other.generatePetalRing,
@@ -296,8 +277,6 @@ class ConfigurationOverride {
       'starOuterRadius' => petalOuterRadius,
       'starSpacing' => petalDiskDistance,
       'starAngle' => petalAngle,
-      'doubleOutline' => doubleOutline,
-      'doubleOutlineSpacing' => doubleOutlineSpacing,
       'generateStarRing' => generateStarRing,
       'sepalStyle' => sepalStyle,
       'sepalDistanceOffset' => sepalDistanceOffset,

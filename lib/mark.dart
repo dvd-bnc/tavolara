@@ -87,65 +87,10 @@ class TavolaraMark {
   void buildMark(P5 sketch) {
     sketch.push();
 
-    // sketch.push();
-
-    // sketch.beginClip();
-    // buildHaloShape(sketch);
-    // sketch.endClip();
-
-    // sketch.beginClip(invert: true);
-    // buildPetalsShape(sketch);
-    // sketch.endClip();
-
-    // sketch.beginClip(invert: true);
-    // buildSepalShape(sketch);
-    // sketch.endClip();
-
-    // sketch.fill(sketch.colorRGB(255, 0, 0));
-    // sketch.noStroke();
-    // sketch.circle(0, 0, 300);
-
-    // sketch.pop();
-
-    // sketch.push();
-
-    // sketch.beginClip();
-    // buildPetalsShape(sketch);
-    // buildSepalShape(sketch);
-    // sketch.endClip();
-
-    // sketch.beginClip(invert: true);
-    // sketch.circle(
-    //   0,
-    //   0,
-    //   config.generatePetalRing
-    //       ? config.diskConfig.radius + config.petalDiskDistance
-    //       : config.diskConfig.radius,
-    // );
-    // sketch.endClip();
-
-    // sketch.fill(sketch.colorRGB(0, 0, 255));
-    // sketch.noStroke();
-    // sketch.circle(0, 0, 300);
-
-    // sketch.pop();
-
     buildHalo(sketch);
     buildSepal(sketch);
-    buildPetals(sketch);
+    buildPetal(sketch);
     buildDisk(sketch);
-
-    // sketch.setFill(style);
-    // sketch.fill(sketch.colorGrayscale(255));
-    // sketch.circle(0, 0, 300);
-
-    // sketch.beginClip(invert: true);
-    // sketch.circle(0, 0, config.diskConfig.radius);
-    // sketch.endClip();
-
-    // sketch.setFill(style);
-    // sketch.fill(sketch.colorRGB(255, 0, 0));
-    // sketch.circle(0, 0, 300);
 
     sketch.pop();
   }
@@ -188,7 +133,6 @@ class TavolaraMark {
 
               sketch.line(a.dx, a.dy, b.dx, b.dy);
             }
-            break;
           case .dots:
             sketch.push();
 
@@ -200,13 +144,10 @@ class TavolaraMark {
             }
 
             sketch.pop();
-            break;
         }
 
         sketch.setStroke(style, .thicker);
         sketch.circle(0, 0, config.diskConfig.radius);
-
-        break;
       case SimpleDiskConfiguration _:
         sketch.setStroke(style, .thicker);
         sketch.circle(0, 0, config.diskConfig.radius);
@@ -214,8 +155,6 @@ class TavolaraMark {
         sketch.circle(0, 0, config.diskConfig.radius / 3);
         sketch.setFill(style);
         sketch.circle(0, 0, config.diskConfig.radius / 6);
-
-        break;
       case FaceDiskConfiguration faceConfig:
         sketch.setStroke(style, .thicker);
         sketch.circle(0, 0, config.diskConfig.radius);
@@ -247,8 +186,6 @@ class TavolaraMark {
         buildCheek(sketch, faceConfig.cheekStyle, faceConfig.cheekVariance.dy, 54, 25);
 
         sketch.pop();
-
-        break;
     }
   }
 
@@ -362,7 +299,6 @@ class TavolaraMark {
         sketch.vertex(9, 32);
         sketch.bezierVertex(7, -7, 16.37, -17, 34.87, -17);
         sketch.vertex(48.87, -17);
-        break;
     }
 
     sketch.endShape();
@@ -407,7 +343,7 @@ class TavolaraMark {
     sketch.pop();
   }
 
-  void buildPetals(P5 sketch) {
+  void buildPetal(P5 sketch) {
     sketch.push();
 
     sketch.beginClip(invert: true);
@@ -420,9 +356,7 @@ class TavolaraMark {
     );
     sketch.endClip();
 
-    if (config.doubleOutline) buildDoubleOutline(sketch);
-
-    buildPrimaryOutline(sketch);
+    buildPetalShape(sketch);
 
     if (config.generatePetalRing) {
       sketch.setStroke(style, .thick);
@@ -432,17 +366,14 @@ class TavolaraMark {
     sketch.pop();
   }
 
-  void buildPrimaryOutline(P5 sketch, [bool? fillShape]) {
+  void buildPetalShape(P5 sketch, [bool? fillShape]) {
     if (fillShape == true || config.petalStyle == .narrowSpikes) {
       sketch.fillOn(style);
     } else {
       sketch.fillOff(style);
     }
 
-    if (config.petalStyle == .round) {
-      sketch.strokeOn(style, .thick);
-      sketch.strokeJoin(sketch.ROUND);
-    } else if (config.petalStyle == .narrowSpikes) {
+    if (config.petalStyle == .narrowSpikes) {
       sketch.strokeOff(style);
     } else {
       sketch.strokeOn(style, .thick);
@@ -474,19 +405,12 @@ class TavolaraMark {
           sketch.vertex(leftAnglePoint.dx, leftAnglePoint.dy);
           sketch.vertex(topAnglePoint.dx, topAnglePoint.dy);
           sketch.vertex(rightAnglePoint.dx, rightAnglePoint.dy);
-        case .round:
         case .sharp:
-          // case .circular:
           for (int j = 0; j < petalResolution; j++) {
             final p = petalBuilder(
               sketch,
               ((angleDelta * 2) / petalResolution) * j,
-              switch (config.petalStyle) {
-                .sharp => sharpPetals,
-                .round => config.petalCount > 6 ? roundPetals : circlePetals,
-                // .circular => circlePetals,
-                _ => throw UnimplementedError(),
-              },
+              sharpPetals,
               config.petalCount,
               angle - angleDelta / 2,
               config.petalOuterRadius,
@@ -519,36 +443,25 @@ class TavolaraMark {
           final topAnglePoint = Offset.fromDirection(angle) * config.size;
           final leftAnglePoint =
               Offset.fromDirection(angle - angleDelta) *
-              (config.diskConfig.radius +
-                  config.petalDiskDistance +
-                  config.doubleOutlineSpacing / 2);
+              (config.diskConfig.radius + config.petalDiskDistance);
 
           sketch.vertex(leftAnglePoint.dx, leftAnglePoint.dy);
           sketch.vertex(topAnglePoint.dx, topAnglePoint.dy);
         }
-        break;
-      case .round:
       case .sharp:
-        // case .circular:
         final res = petalResolution * config.petalCount;
         for (int i = 0; i < res; i++) {
           final p = petalBuilder(
             sketch,
             (math.pi * 2 / res) * i,
-            switch (config.petalStyle) {
-              .sharp => sharpPetals,
-              .round => circlePetals,
-              // .circular => circlePetals,
-              _ => throw UnimplementedError(),
-            },
+            sharpPetals,
             config.petalCount,
             config.petalAngle - math.pi * 2 / config.petalCount / 4,
             config.size,
-            config.diskConfig.radius + config.petalDiskDistance + config.doubleOutlineSpacing / 2,
+            config.diskConfig.radius + config.petalDiskDistance,
           );
           sketch.vertex(p.dx, p.dy);
         }
-        break;
     }
     sketch.endShape(sketch.CLOSE);
   }
@@ -558,22 +471,12 @@ class TavolaraMark {
 
     if (config.sepalStyle != .none) {
       sketch.beginClip(invert: true);
-      if (config.doubleOutline) {
-        buildDoubleOutline(sketch, true);
-      } else {
-        buildPrimaryOutline(sketch, true);
-      }
+      buildPetalShape(sketch, true);
       sketch.endClip();
     }
 
-    if (config.sepalStyle == .mandala) {
-      sketch.setStroke(style, config.doubleOutline ? .thinner : .thin);
-      sketch.strokeJoin(sketch.MITER);
-    } else if (config.sepalStyle == .dots) {
-      sketch.setStroke(style, config.doubleOutline ? .thinner : .thin);
-      sketch.strokeJoin(sketch.MITER);
-      // sketch.setFill(style);
-    }
+    sketch.setStroke(style, .thin);
+    sketch.strokeJoin(sketch.MITER);
 
     buildSepalShape(sketch);
 
@@ -587,14 +490,10 @@ class TavolaraMark {
       sketch.setStroke(style, .thinner);
       final resolution = 12 * config.petalCount;
       for (int i = 0; i < resolution; i++) {
-        final innerRadius = config.doubleOutline
-            ? config.diskConfig.radius + config.petalDiskDistance + config.doubleOutlineSpacing
-            : config.starInnerRadius;
-        final outerRadius = config.doubleOutline ? config.size : config.petalOuterRadius;
-        final rangeMin = (outerRadius - innerRadius) / 2;
+        final rangeMin = (config.petalOuterRadius - config.starInnerRadius) / 2;
         var p = Offset.fromDirection(
           config.petalAngle + math.pi * 2 / resolution * i,
-          rangeMin * config.sepalDistanceOffset + innerRadius + rangeMin,
+          rangeMin * config.sepalDistanceOffset + config.starInnerRadius + rangeMin,
         );
         sketch.line(p.dx, p.dy, 0, 0);
       }
@@ -606,11 +505,6 @@ class TavolaraMark {
   }
 
   void buildSepalShape(P5 sketch) {
-    final innerRadius = config.doubleOutline
-        ? config.diskConfig.radius + config.petalDiskDistance + config.doubleOutlineSpacing
-        : config.starInnerRadius;
-    final outerRadius = config.doubleOutline ? config.size : config.petalOuterRadius;
-
     if (config.sepalStyle == .mandala) {
       sketch.beginShape();
     }
@@ -621,73 +515,40 @@ class TavolaraMark {
       var topAnglePoint = Offset.fromDirection(angle);
       var leftAnglePoint = Offset.fromDirection(angle - angleDelta);
 
-      final rangeMin = (outerRadius - innerRadius) / 2;
+      final rangeMin = (config.petalOuterRadius - config.starInnerRadius) / 2;
       switch (config.sepalStyle) {
         case .none:
           break;
         case .dots:
-          leftAnglePoint *= rangeMin * config.sepalDistanceOffset + innerRadius + rangeMin;
+          leftAnglePoint *=
+              rangeMin * config.sepalDistanceOffset + config.starInnerRadius + rangeMin;
 
-          // sketch.setStroke(style);s
-          // sketch.strokeWeight(config.sepalDotsSize * 2 + style.strokeWidth);
-          // sketch.point(leftAnglePoint.x, leftAnglePoint.y);
           sketch.circle(leftAnglePoint.dx, leftAnglePoint.dy, config.sepalDotsSize);
           sketch.circle(leftAnglePoint.dx, leftAnglePoint.dy, config.sepalDotsSize / 3);
-          // sketch.point(leftAnglePoint.x, leftAnglePoint.y);
-          break;
         case .mandala:
           switch (config.petalStyle) {
             case .spikes:
             case .narrowSpikes:
-              topAnglePoint *= innerRadius;
-              leftAnglePoint *= rangeMin * config.sepalDistanceOffset + innerRadius + rangeMin;
+              topAnglePoint *= config.starInnerRadius;
+              leftAnglePoint *=
+                  rangeMin * config.sepalDistanceOffset + config.starInnerRadius + rangeMin;
 
               sketch.vertex(leftAnglePoint.dx, leftAnglePoint.dy);
               sketch.vertex(topAnglePoint.dx, topAnglePoint.dy);
-
-              // sketch.push();
-              // sketch.setStroke(style, .thinner);
-              // for (int i = 0; i < 12; i++) {
-              //   print(math.asin(math.sin(i / 12 * math.pi)) / (math.pi / 2));
-              //   var p = Offset.fromDirection(
-              //     angle - angleDelta * 2 + angleDelta * 2 / 12 * i,
-              //     // rangeMin * config.sepalDistanceOffset + innerRadius + rangeMin,
-              //     lerpDouble(
-              //       innerRadius,
-              //       rangeMin * config.sepalDistanceOffset + innerRadius + rangeMin,
-              //       math.asin(math.sin(i / 12 * math.pi)) / (math.pi / 2),
-              //     )!,
-              //   );
-              //   sketch.line(p.dx, p.dy, 0, 0);
-              // }
-              // sketch.pop();
-              break;
-            case .round:
             case .sharp:
-              // case .circular:
               for (int j = 0; j < petalResolution; j++) {
                 final p = petalBuilder(
                   sketch,
                   ((angleDelta * 2) / petalResolution) * j,
-                  switch (config.petalStyle) {
-                    .sharp => sharpPetals,
-                    .round => circlePetals,
-                    // .circular => circlePetals,
-                    _ => throw UnimplementedError(),
-                  },
+                  sharpPetals,
                   config.petalCount,
                   angle + angleDelta / 2,
-                  rangeMin * config.sepalDistanceOffset + innerRadius + rangeMin,
-                  innerRadius,
+                  rangeMin * config.sepalDistanceOffset + config.starInnerRadius + rangeMin,
+                  config.starInnerRadius,
                 );
-                // sketch.push();
-                // sketch.setStroke(style, .thinner);
-                // if (j % 3 == 0) sketch.line(p.dx, p.dy, 0, 0);
-                // sketch.pop();
                 sketch.vertex(p.dx, p.dy);
               }
           }
-          break;
       }
     }
 
@@ -700,9 +561,7 @@ class TavolaraMark {
     sketch.push();
 
     sketch.setStroke(style, .thin);
-    sketch.strokeJoin(
-      config.haloStyle == .petal || config.haloStyle == .contraPetal ? sketch.ROUND : sketch.MITER,
-    );
+    sketch.strokeJoin(config.haloStyle == .contraPetal ? sketch.ROUND : sketch.MITER);
 
     if (config.haloStyle == .contraPetal) {
       sketch.beginClip();
@@ -761,20 +620,6 @@ class TavolaraMark {
             sketch.arc(0, 0, 240 + intra, 240 + intra, angle + step * 2, angle + step * 3);
           }
         }
-      case .petal:
-        final res = 64 * config.haloElementCount;
-        for (int i = 0; i < res; i++) {
-          final p = petalBuilder(
-            sketch,
-            (math.pi * 2 / res) * i,
-            circlePetals,
-            config.haloElementCount,
-            config.haloRotation,
-            275,
-            240,
-          );
-          sketch.vertex(p.dx, p.dy);
-        }
       case .contraPetal:
         sketch.circle(0, 0, 275);
 
@@ -792,8 +637,6 @@ class TavolaraMark {
           sketch.vertex(p.dx, p.dy);
         }
       case .hatching:
-        // sketch.circle(0, 0, 275);
-
         final angleDelta = math.pi * 2 / config.haloElementCount;
         final parts = (angleDelta * 180 / math.pi) ~/ 2;
         for (int i = 0; i < config.haloElementCount; i++) {
