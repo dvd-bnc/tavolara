@@ -196,11 +196,10 @@ class FlagOverridePropertyOptions extends OverridePropertyOptions<bool> {
 }
 
 class OverrideProperty<T extends Object> {
-  final OverridePropertyOptions<T> options;
   OverrideMode mode;
   T value;
 
-  OverrideProperty({required this.options, this.mode = .none, required this.value});
+  OverrideProperty({this.mode = .none, required this.value});
 }
 
 class ConfigurationOverride {
@@ -240,82 +239,25 @@ class ConfigurationOverride {
     OverrideProperty<HaloStyle>? haloStyle,
     OverrideProperty<int>? haloElementCount,
     OverrideProperty<double>? haloRotation,
-  }) : outerRadius =
-           outerRadius ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: 200), value: 0),
-       petalStyle =
-           petalStyle ??
-           .new(
-             options: ChoiceOverridePropertyOptions(
-               options: [
-                 (option: .spikes, title: "Spikes"),
-                 (option: .narrowSpikes, title: "Narrow spikes"),
-                 (option: .sharp, title: "Petals (sharp)"),
-                 (option: .round, title: "Petals (round)"),
-                 //  (option: .circular, title: "Petals (circular)"),
-               ],
-             ),
-             value: .spikes,
-           ),
-       doubleOutline = doubleOutline ?? .new(options: FlagOverridePropertyOptions(), value: false),
-       doubleOutlineSpacing =
-           doubleOutlineSpacing ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: 200), value: 0),
-       generateStarRing =
-           generateStarRing ?? .new(options: FlagOverridePropertyOptions(), value: false),
-       petalCount =
-           starPoints ?? .new(options: RangedIntOverridePropertyOptions(min: 3, max: 16), value: 3),
-       petalOuterRadius =
-           starOuterRadius ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: 200), value: 0),
-       petalDiskDistance =
-           starSpacing ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: 200), value: 0),
-       petalAngle =
-           starAngle ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: pi * 2), value: 0),
-       sepalStyle =
-           sepalStyle ??
-           .new(
-             options: ChoiceOverridePropertyOptions(
-               options: [
-                 (option: .none, title: "None"),
-                 (option: .dots, title: "Dots"),
-                 (option: .mandala, title: "Mandala"),
-               ],
-             ),
-             value: .none,
-           ),
-       sepalDistanceOffset =
-           sepalDistanceOffset ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: 1), value: 0),
-       sepalDotsSize =
-           sepalDotsSize ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: 50), value: 0),
-       haloStyle =
-           haloStyle ??
-           .new(
-             options: ChoiceOverridePropertyOptions(
-               options: [
-                 (option: .ring, title: "Ring"),
-                 (option: .petal, title: "Petal"),
-                 (option: .contraPetal, title: "Contrapetal"),
-                 (option: .gear, title: "Gear"),
-                 (option: .hatching, title: "Hatching"),
-               ],
-             ),
-             value: .ring,
-           ),
-       haloElementCount =
-           haloElementCount ??
-           .new(options: RangedIntOverridePropertyOptions(min: 4, max: 32), value: 4),
-       haloRotation =
-           haloRotation ??
-           .new(options: RangedDoubleOverridePropertyOptions(min: 0, max: pi * 2), value: 0);
+  }) : outerRadius = outerRadius ?? .new(value: 0),
+       petalStyle = petalStyle ?? .new(value: .spikes),
+       doubleOutline = doubleOutline ?? .new(value: false),
+       doubleOutlineSpacing = doubleOutlineSpacing ?? .new(value: 0),
+       generateStarRing = generateStarRing ?? .new(value: false),
+       petalCount = starPoints ?? .new(value: 3),
+       petalOuterRadius = starOuterRadius ?? .new(value: 0),
+       petalDiskDistance = starSpacing ?? .new(value: 0),
+       petalAngle = starAngle ?? .new(value: 0),
+       sepalStyle = sepalStyle ?? .new(value: .none),
+       sepalDistanceOffset = sepalDistanceOffset ?? .new(value: 0),
+       sepalDotsSize = sepalDotsSize ?? .new(value: 0),
+       haloStyle = haloStyle ?? .new(value: .ring),
+       haloElementCount = haloElementCount ?? .new(value: 4),
+       haloRotation = haloRotation ?? .new(value: 0);
 
   Configuration patch(Configuration other) {
     return Configuration(
-      size: /* size.mode == .patch ? size.value :  */ other.size,
+      size: other.size,
       diskConfig: /* coreConfig.mode == .patch ? coreConfig.value :  */ other.diskConfig,
       petalStyle: petalStyle.mode == .patch ? petalStyle.value : other.petalStyle,
       doubleOutline: doubleOutline.mode == .patch ? doubleOutline.value : other.doubleOutline,

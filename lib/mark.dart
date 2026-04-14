@@ -171,28 +171,22 @@ class TavolaraMark {
 
             sketch.setStroke(style, .thinner);
             for (int i = 0; i < concentricConfig.elementAmount; i++) {
-              final angleOffset = 0; //ccConfig.elementVariance[i];
               final angle =
-                  ((math.pi * 2) / concentricConfig.elementAmount) * i +
-                  concentricConfig.rotation +
-                  angleOffset;
+                  ((math.pi * 2) / concentricConfig.elementAmount) * i + concentricConfig.rotation;
 
-              final rotationPoint = sketch.createVector(math.cos(angle), math.sin(angle));
-              final a = rotationPoint.copy();
-              if (spaceFromEdge) {
-                a.mult(concentricConfig.innerRadius + intraSpace / 2 - 8);
-              } else {
-                a.mult(config.diskConfig.radius);
-              }
+              final rotationPoint = Offset.fromDirection(angle);
+              final a =
+                  rotationPoint *
+                  (spaceFromEdge
+                      ? concentricConfig.innerRadius + intraSpace / 2 - 8
+                      : config.diskConfig.radius);
+              final b =
+                  rotationPoint *
+                  (spaceFromEdge
+                      ? concentricConfig.innerRadius + intraSpace / 2 + 8
+                      : config.diskConfig.radius);
 
-              final b = rotationPoint.copy();
-              if (spaceFromEdge) {
-                b.mult(concentricConfig.innerRadius + intraSpace / 2 + 8);
-              } else {
-                b.mult(config.diskConfig.radius);
-              }
-
-              sketch.line(a.x, a.y, b.x, b.y);
+              sketch.line(a.dx, a.dy, b.dx, b.dy);
             }
             break;
           case .dots:
@@ -201,9 +195,7 @@ class TavolaraMark {
             sketch.setStroke(style, .thin);
             sketch.rotate(concentricConfig.rotation);
             for (int i = 0; i < concentricConfig.elementAmount; i++) {
-              final variance = sketch.createVector(0, 0); //ccConfig.elementVariance[i];
-
-              sketch.point(variance.x, concentricConfig.innerRadius + intraSpace / 2 + variance.y);
+              sketch.point(0, concentricConfig.innerRadius + intraSpace / 2);
               sketch.rotate((math.pi * 2) / concentricConfig.elementAmount);
             }
 
@@ -267,7 +259,7 @@ class TavolaraMark {
 
     switch (eyeStyle) {
       case .almond:
-        sketch.setStroke(style, .thick);
+        sketch.setStroke(style, .thin);
 
         sketch.beginShape();
         sketch.vertex(-14, 0);
@@ -277,7 +269,7 @@ class TavolaraMark {
         sketch.bezierVertex(-7.58, 7, -14, 0, -14, 0);
         sketch.endShape(sketch.CLOSE);
       case .concentric:
-        sketch.setStroke(style, .thick);
+        sketch.setStroke(style, .thin);
         sketch.circle(0, 0, 6);
         sketch.circle(0, 0, 15);
       case .dot:
@@ -395,8 +387,8 @@ class TavolaraMark {
 
         for (int i = 0; i < cheekStyle.value; i++) {
           final angle = (math.pi * 2 / cheekStyle.value) * i + variance;
-          final p = sketch.createVector(math.cos(angle) * 11, math.sin(angle) * 11);
-          sketch.vertex(p.x, p.y);
+          final p = Offset.fromDirection(angle, 11);
+          sketch.vertex(p.dx, p.dy);
         }
 
         sketch.endShape(sketch.CLOSE);
@@ -405,8 +397,8 @@ class TavolaraMark {
 
         for (int i = 0; i < cheekStyle.value; i++) {
           final angle = (math.pi * 2 / cheekStyle.value) * i + variance;
-          final p = sketch.createVector(math.cos(angle) * 24, math.sin(angle) * 24);
-          sketch.vertex(p.x, p.y);
+          final p = Offset.fromDirection(angle, 24);
+          sketch.vertex(p.dx, p.dy);
         }
 
         sketch.endShape(sketch.CLOSE);
@@ -475,13 +467,9 @@ class TavolaraMark {
       switch (config.petalStyle) {
         case .spikes:
         case .narrowSpikes:
-          final topAnglePoint = Offset(math.cos(angle), math.sin(angle)) * config.petalOuterRadius;
-          final rightAnglePoint =
-              Offset(math.cos(angle + angleDelta), math.sin(angle + angleDelta)) *
-              config.starInnerRadius;
-          final leftAnglePoint =
-              Offset(math.cos(angle - angleDelta), math.sin(angle - angleDelta)) *
-              config.starInnerRadius;
+          final topAnglePoint = Offset.fromDirection(angle, config.petalOuterRadius);
+          final rightAnglePoint = Offset.fromDirection(angle + angleDelta, config.starInnerRadius);
+          final leftAnglePoint = Offset.fromDirection(angle - angleDelta, config.starInnerRadius);
 
           sketch.vertex(leftAnglePoint.dx, leftAnglePoint.dy);
           sketch.vertex(topAnglePoint.dx, topAnglePoint.dy);
@@ -528,19 +516,15 @@ class TavolaraMark {
         for (int i = 0; i < config.petalCount; i++) {
           final angleDelta = math.pi * 2 / config.petalCount / 2;
           final angle = (math.pi * 2 / config.petalCount) * i + config.petalAngle;
-          final topAnglePoint = sketch.createVector(math.cos(angle), math.sin(angle));
-          final leftAnglePoint = sketch.createVector(
-            math.cos(angle - angleDelta),
-            math.sin(angle - angleDelta),
-          );
+          final topAnglePoint = Offset.fromDirection(angle) * config.size;
+          final leftAnglePoint =
+              Offset.fromDirection(angle - angleDelta) *
+              (config.diskConfig.radius +
+                  config.petalDiskDistance +
+                  config.doubleOutlineSpacing / 2);
 
-          topAnglePoint.mult(config.size);
-          leftAnglePoint.mult(
-            config.diskConfig.radius + config.petalDiskDistance + config.doubleOutlineSpacing / 2,
-          );
-
-          sketch.vertex(leftAnglePoint.x, leftAnglePoint.y);
-          sketch.vertex(topAnglePoint.x, topAnglePoint.y);
+          sketch.vertex(leftAnglePoint.dx, leftAnglePoint.dy);
+          sketch.vertex(topAnglePoint.dx, topAnglePoint.dy);
         }
         break;
       case .round:
@@ -740,51 +724,41 @@ class TavolaraMark {
 
     switch (config.haloStyle) {
       case .ring:
-        // sketch.circle(0, 0, 275);
         for (int i = 0; i < 240; i++) {
           final p1 = Offset.fromDirection(config.haloRotation + math.pi * 2 / 240 * i, 275);
           final p2 = Offset.fromDirection(
             config.haloRotation + math.pi * 2 / 480 + math.pi * 2 / 240 * i,
             270,
           );
+          final p3 = Offset.fromDirection(config.haloRotation + math.pi * 2 / 240 * i, 265);
+          final p4 = Offset.fromDirection(
+            config.haloRotation + math.pi * 2 / 480 + math.pi * 2 / 240 * i,
+            260,
+          );
+          final p5 = Offset.fromDirection(config.haloRotation + math.pi * 2 / 240 * i, 255);
+          sketch.setStroke(style, .thinner);
           sketch.point(p1.dx, p1.dy);
+          sketch.setStroke(style, .thin);
           sketch.point(p2.dx, p2.dy);
+          sketch.setStroke(style, .thinner);
+          sketch.point(p3.dx, p3.dy);
+          sketch.setStroke(style, .thin);
+          sketch.point(p4.dx, p4.dy);
+          sketch.setStroke(style, .thinner);
+          sketch.point(p5.dx, p5.dy);
         }
-      // case .polygon:
-      //   for (int i = 0; i < config.haloElementCount; i++) {
-      //     final angle = math.pi * 2 / config.haloElementCount * i + config.haloRotation;
-      //     final p = Offset(math.cos(angle), math.sin(angle)) * 275;
-      //     sketch.vertex(p.dx, p.dy);
-      //   }
       case .gear:
         for (int i = 0; i < config.haloElementCount; i++) {
           final step = math.pi * 2 / config.haloElementCount / 4;
           final angle = (math.pi * 2 / config.haloElementCount * i) + config.haloRotation;
-          final p1 = Offset(math.cos(angle), math.sin(angle)) * 240;
-          final p2 = Offset(math.cos(angle), math.sin(angle)) * 275;
-          final p3 = Offset(math.cos(angle + step * 2), math.sin(angle + step * 2)) * 275;
-          final p4 = Offset(math.cos(angle + step * 2), math.sin(angle + step * 2)) * 240;
-          sketch.vertex(p1.dx, p1.dy);
-          sketch.vertex(p2.dx, p2.dy);
 
-          for (int j = 0; j < petalResolution; j++) {
-            final angleStep = step * 2 / petalResolution * j;
-            final pO = Offset(math.cos(angle + angleStep), math.sin(angle + angleStep)) * 275;
-            sketch.vertex(pO.dx, pO.dy);
-          }
+          sketch.arc(0, 0, 275, 275, angle, angle + step * 3);
+          sketch.arc(0, 0, 240, 240, angle + step * 2, angle + step * 4);
 
-          sketch.vertex(p3.dx, p3.dy);
-          sketch.vertex(p4.dx, p4.dy);
-
-          for (int j = 0; j < petalResolution; j++) {
-            final angleStep = step * 2 / petalResolution * j;
-            final pI =
-                Offset(
-                  math.cos(angle + step * 2 + angleStep),
-                  math.sin(angle + step * 2 + angleStep),
-                ) *
-                240;
-            sketch.vertex(pI.dx, pI.dy);
+          for (int i = 0; i <= 4; i++) {
+            final intra = (275 - 240) / 4 * i;
+            sketch.arc(0, 0, 240 + intra, 240 + intra, angle, angle + step);
+            sketch.arc(0, 0, 240 + intra, 240 + intra, angle + step * 2, angle + step * 3);
           }
         }
       case .petal:

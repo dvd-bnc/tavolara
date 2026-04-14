@@ -179,6 +179,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Widget buildModeTile<T extends Object>({
     required String title,
     required OverrideProperty<T> property,
+    required OverridePropertyOptions<T> options,
   }) {
     return Column(
       children: [
@@ -201,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             ),
           ),
         ),
-        switch (property.options) {
+        switch (options) {
           RangedDoubleOverridePropertyOptions(:final min, :final max) => Slider(
             value: property.value as double,
             onChanged: property.mode != .none
@@ -305,27 +306,106 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             ),
           ),
         buildHeader("Disk"),
-        buildModeTile(title: "Outer radius", property: configOverride.outerRadius),
+        buildModeTile(
+          title: "Outer radius",
+          property: configOverride.outerRadius,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: 200),
+        ),
         buildHeader("Petal"),
-        buildModeTile(title: "Petal style", property: configOverride.petalStyle),
-        buildModeTile(title: "Petal count", property: configOverride.petalCount),
-        buildModeTile(title: "Petal outer radius", property: configOverride.petalOuterRadius),
-        buildModeTile(title: "Petal disk distance", property: configOverride.petalDiskDistance),
-        buildModeTile(title: "Petal rotation", property: configOverride.petalAngle),
-        buildModeTile(title: "Generate star ring", property: configOverride.generateStarRing),
-        buildModeTile(title: "Double outline", property: configOverride.doubleOutline),
+        buildModeTile(
+          title: "Petal style",
+          property: configOverride.petalStyle,
+          options: ChoiceOverridePropertyOptions<PetalStyle>(
+            options: [
+              (option: .spikes, title: "Spikes"),
+              (option: .narrowSpikes, title: "Narrow spikes"),
+              (option: .sharp, title: "Petals (sharp)"),
+              (option: .round, title: "Petals (round)"),
+              //  (option: .circular, title: "Petals (circular)"),
+            ],
+          ),
+        ),
+        buildModeTile(
+          title: "Petal count",
+          property: configOverride.petalCount,
+          options: RangedIntOverridePropertyOptions(min: 3, max: 16),
+        ),
+        buildModeTile(
+          title: "Petal outer radius",
+          property: configOverride.petalOuterRadius,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: 200),
+        ),
+        buildModeTile(
+          title: "Petal disk distance",
+          property: configOverride.petalDiskDistance,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: 200),
+        ),
+        buildModeTile(
+          title: "Petal rotation",
+          property: configOverride.petalAngle,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: pi * 2),
+        ),
+        buildModeTile(
+          title: "Generate star ring",
+          property: configOverride.generateStarRing,
+          options: FlagOverridePropertyOptions(),
+        ),
+        buildModeTile(
+          title: "Double outline",
+          property: configOverride.doubleOutline,
+          options: FlagOverridePropertyOptions(),
+        ),
         buildModeTile(
           title: "Double outline spacing",
           property: configOverride.doubleOutlineSpacing,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: 200),
         ),
         buildHeader("Sepal"),
-        buildModeTile(title: "Sepal style", property: configOverride.sepalStyle),
-        buildModeTile(title: "Sepal distance offset", property: configOverride.sepalDistanceOffset),
-        buildModeTile(title: "Sepal dots size", property: configOverride.sepalDotsSize),
+        buildModeTile(
+          title: "Sepal style",
+          property: configOverride.sepalStyle,
+          options: ChoiceOverridePropertyOptions<SepalStyle>(
+            options: [
+              (option: .none, title: "None"),
+              (option: .dots, title: "Dots"),
+              (option: .mandala, title: "Mandala"),
+            ],
+          ),
+        ),
+        buildModeTile(
+          title: "Sepal distance offset",
+          property: configOverride.sepalDistanceOffset,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: 1),
+        ),
+        buildModeTile(
+          title: "Sepal dots size",
+          property: configOverride.sepalDotsSize,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: 50),
+        ),
         buildHeader("Halo"),
-        buildModeTile(title: "Halo style", property: configOverride.haloStyle),
-        buildModeTile(title: "Halo element count", property: configOverride.haloElementCount),
-        buildModeTile(title: "Halo rotation", property: configOverride.haloRotation),
+        buildModeTile(
+          title: "Halo style",
+          property: configOverride.haloStyle,
+          options: ChoiceOverridePropertyOptions<HaloStyle>(
+            options: [
+              (option: .ring, title: "Ring"),
+              (option: .petal, title: "Petal"),
+              (option: .contraPetal, title: "Contrapetal"),
+              (option: .gear, title: "Gear"),
+              (option: .hatching, title: "Hatching"),
+            ],
+          ),
+        ),
+        buildModeTile(
+          title: "Halo element count",
+          property: configOverride.haloElementCount,
+          options: RangedIntOverridePropertyOptions(min: 4, max: 32),
+        ),
+        buildModeTile(
+          title: "Halo rotation",
+          property: configOverride.haloRotation,
+          options: RangedDoubleOverridePropertyOptions(min: 0, max: pi * 2),
+        ),
       ],
     );
   }
