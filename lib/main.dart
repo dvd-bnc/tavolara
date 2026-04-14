@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         const Breakpoint(start: 1001, end: double.infinity, name: DESKTOP),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'giardini generativi',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           textTheme: GoogleFonts.geistTextTheme(Typography.whiteMountainView),
@@ -548,6 +548,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               children: [
                 Positioned.fill(
                   child: ClipRect(
+                    clipBehavior: breakpoints.isDesktop ? .hardEdge : .none,
                     child: LayoutBuilder(
                       builder: (context, constraints) => OverflowBox(
                         alignment: .center,
@@ -567,7 +568,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return Transform.scale(
-                        scale: min(constraints.maxWidth - 32, 600) / 600 * sizeVariant.size,
+                        scale:
+                            min(min(constraints.maxWidth, constraints.maxHeight) - 32, 600) /
+                            600 *
+                            sizeVariant.size,
                         child: OverflowBox(
                           fit: .deferToChild,
                           maxWidth: .infinity,
