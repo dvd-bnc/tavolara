@@ -302,6 +302,9 @@ class ConfigurationOverride {
       'sepalStyle' => sepalStyle,
       'sepalDistanceOffset' => sepalDistanceOffset,
       'sepalDotsSize' => sepalDotsSize,
+      'haloStyle' => haloStyle,
+      'haloElementCount' => haloElementCount,
+      'haloRotation' => haloRotation,
       _ => null,
     };
   }
