@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:tavolara/config.dart';
 import 'package:tavolara/mark.dart';
+import 'package:tavolara/surface.dart';
 import 'package:web/web.dart' as web;
 
 void main() {
@@ -94,8 +95,12 @@ enum SizeVariant {
   const SizeVariant(this.size);
 }
 
+enum Renderer { canvas, p5 }
+
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Renderer _renderer = .p5;
 
   SizeVariant sizeVariant = .full;
   final seedController = TextEditingController();
@@ -127,16 +132,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   Style get _style => Style(
-    backgroundColor: sketch.p5.colorRGB(
-      (backgroundColor.r * 255).toInt(),
-      (backgroundColor.g * 255).toInt(),
-      (backgroundColor.b * 255).toInt(),
-    ),
-    color: sketch.p5.colorRGB(
-      (foregroundColor.r * 255).toInt(),
-      (foregroundColor.g * 255).toInt(),
-      (foregroundColor.b * 255).toInt(),
-    ),
+    backgroundColor: backgroundColor,
+    color: foregroundColor,
     strokeClasses: {.thinner: 3, .thin: 4, .thick: 6, .thicker: 8, .thickest: 10},
   );
 
@@ -305,6 +302,20 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               ),
             ),
           ),
+        buildHeader("Renderer"),
+        RadioGroup<Renderer>(
+          onChanged: (v) {
+            setState(() => _renderer = v!);
+            _updateConfiguration();
+          },
+          groupValue: _renderer,
+          child: Column(
+            children: [
+              for (final option in Renderer.values)
+                RadioListTile<Renderer>(title: Text(option.name), value: option),
+            ],
+          ),
+        ),
         buildHeader("Disk"),
         buildModeTile(
           title: "Outer radius",
@@ -565,19 +576,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           maxHeight: .infinity,
                           child: SizedBox.square(
                             dimension: 600,
-                            child: HtmlElementView.fromTagName(
-                              tagName: 'div',
-                              onElementCreated: (element) {
-                                final div = element as web.HTMLDivElement;
+                            child: switch (_renderer) {
+                              .canvas => CustomPaint(
+                                painter: _MarkPainter(TavolaraMark(config: _config, style: _style)),
+                              ),
+                              .p5 => HtmlElementView.fromTagName(
+                                tagName: 'div',
+                                onElementCreated: (element) {
+                                  final div = element as web.HTMLDivElement;
 
-                                div
-                                  ..style.width = '100%'
-                                  ..style.height = '100%';
+                                  div
+                                    ..style.width = '100%'
+                                    ..style.height = '100%';
 
-                                sketch = TavolaraSketch(size: 600, parent: div);
-                                sketch.bootstrap(_config, _style);
-                              },
-                            ),
+                                  sketch = TavolaraSketch(size: 600, parent: div);
+                                  sketch.bootstrap(_config, _style);
+                                },
+                              ),
+                            },
                           ),
                         ),
                       );
@@ -857,5 +873,21 @@ class _ScaleBox extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _MarkPainter extends CustomPainter {
+  final TavolaraMark mark;
+
+  const _MarkPainter(this.mark);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    mark.buildDefaultMark(CanvasSurface(canvas), 0, 0, size.width);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

@@ -1,13 +1,15 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:tavolara/bindings.dart';
+import 'package:tavolara/surface.dart';
 
 enum StrokeClass { thinner, thin, thick, thicker, thickest }
 
 class Style {
-  final P5Color backgroundColor;
-  final P5Color color;
+  final Color backgroundColor;
+  final Color color;
   final Map<StrokeClass, double> strokeClasses;
 
   const Style({required this.backgroundColor, required this.color, required this.strokeClasses});
@@ -415,7 +417,7 @@ extension on Random {
   }
 }
 
-extension StyledSketch on P5 {
+extension StyledSurface on Surface {
   void fillOn(Style style) {
     fill(style.color);
   }
@@ -441,6 +443,41 @@ extension StyledSketch on P5 {
   void setStroke(Style style, StrokeClass strokeCls) {
     fillOff(style);
     strokeOn(style, strokeCls);
+  }
+}
+
+extension StyledP5 on P5 {
+  void fillOn(Style style) {
+    fill(style.color.toP5(this));
+  }
+
+  void fillOff(Style style) {
+    noFill();
+  }
+
+  void strokeOn(Style style, StrokeClass strokeCls) {
+    strokeWeight(style.strokeClasses[strokeCls]!);
+    stroke(style.color.toP5(this));
+  }
+
+  void strokeOff(Style style) {
+    noStroke();
+  }
+
+  void setFill(Style style) {
+    fillOn(style);
+    strokeOff(style);
+  }
+
+  void setStroke(Style style, StrokeClass strokeCls) {
+    fillOff(style);
+    strokeOn(style, strokeCls);
+  }
+}
+
+extension ColorToP5 on Color {
+  P5Color toP5(P5 p5) {
+    return p5.colorRGB(red8bit, green8bit, blue8bit, alpha8bit);
   }
 }
 

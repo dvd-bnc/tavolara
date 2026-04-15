@@ -4,6 +4,8 @@ import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
+extension type P5ShapeMode._(Object? value) {}
+
 typedef P5Factory = void Function(P5 sketch);
 @JS('p5')
 extension type P5._(JSObject _) implements JSObject {
@@ -32,6 +34,32 @@ extension type P5._(JSObject _) implements JSObject {
   external String MITER;
   external String BEVEL;
   external String ROUND;
+
+  @JS('POINTS')
+  external int _POINTS;
+  @JS('LINES')
+  external int _LINES;
+  @JS('TRIANGLES')
+  external int _TRIANGLES;
+  @JS('TRIANGLE_FAN')
+  external int _TRIANGLE_FAN;
+  @JS('TRIANGLE_STRIP')
+  external int _TRIANGLE_STRIP;
+  @JS('QUADS')
+  external String _QUADS;
+  @JS('QUAD_STRIP')
+  external String _QUAD_STRIP;
+  @JS('TESS')
+  external String _TESS;
+
+  P5ShapeMode get POINTS => P5ShapeMode._(_POINTS);
+  P5ShapeMode get LINES => P5ShapeMode._(_LINES);
+  P5ShapeMode get TRIANGLES => P5ShapeMode._(_TRIANGLES);
+  P5ShapeMode get TRIANGLE_FAN => P5ShapeMode._(_TRIANGLE_FAN);
+  P5ShapeMode get TRIANGLE_STRIP => P5ShapeMode._(_TRIANGLE_STRIP);
+  P5ShapeMode get QUADS => P5ShapeMode._(_QUADS);
+  P5ShapeMode get QUAD_STRIP => P5ShapeMode._(_QUAD_STRIP);
+  P5ShapeMode get TESS => P5ShapeMode._(_TESS);
 
   external num width;
   external num height;
@@ -95,7 +123,12 @@ extension type P5._(JSObject _) implements JSObject {
   external void vertex(num x, num y);
   external void bezierVertex(num cx1, num cy1, num cx2, num cy2, num x, num y);
 
-  external void beginShape([int? mode]);
+  @JS('beginShape')
+  external void _beginShape([JSAny? mode]);
+  void beginShape([P5ShapeMode? mode]) {
+    _beginShape(mode?.value.jsify());
+  }
+
   external void endShape([String? mode]);
 }
 
