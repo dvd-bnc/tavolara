@@ -126,7 +126,11 @@ extension type P5._(JSObject _) implements JSObject {
   @JS('beginShape')
   external void _beginShape([JSAny? mode]);
   void beginShape([P5ShapeMode? mode]) {
-    _beginShape(mode?.value.jsify());
+    if (mode == null) {
+      _beginShape();
+    } else {
+      _beginShape(mode.value.jsify());
+    }
   }
 
   external void endShape([String? mode]);

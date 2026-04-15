@@ -3,14 +3,18 @@ import 'dart:math';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:tavolara/config.dart';
 import 'package:tavolara/mark.dart';
 import 'package:tavolara/surface.dart';
+import 'package:tavolara/survey.dart';
 import 'package:web/web.dart' as web;
 
 void main() {
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -24,7 +28,7 @@ class MyApp extends StatelessWidget {
         const Breakpoint(start: 0, end: 1000, name: MOBILE),
         const Breakpoint(start: 1001, end: double.infinity, name: DESKTOP),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'giardini generativi',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -69,19 +73,24 @@ class MyApp extends StatelessWidget {
             trackVisibility: WidgetStatePropertyAll(true),
           ),
         ),
-        home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        routerConfig: _router,
       ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+final _router = GoRouter(
+  routes: [
+    GoRoute(path: '/', builder: (context, state) => GeneratorPage()),
+    GoRoute(path: '/survey', builder: (context, state) => SurveyPage()),
+  ],
+);
 
-  final String title;
+class GeneratorPage extends StatefulWidget {
+  const GeneratorPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<GeneratorPage> createState() => _GeneratorPageState();
 }
 
 enum SizeVariant {
@@ -97,7 +106,7 @@ enum SizeVariant {
 
 enum Renderer { canvas, p5 }
 
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateMixin {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   Renderer _renderer = .p5;
@@ -134,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Style get _style => Style(
     backgroundColor: backgroundColor,
     color: foregroundColor,
-    strokeClasses: {.thinner: 3, .thin: 4, .thick: 6, .thicker: 8, .thickest: 10},
+    strokeClasses: {.thinner: 2, .thin: 4, .thick: 6, .thicker: 8, .thickest: 10},
   );
 
   Configuration get _config => configOverride.patch(
@@ -317,6 +326,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ),
         ),
         buildHeader("Disk"),
+        buildModeTile(
+          title: "Style",
+          property: configOverride.diskStyle,
+          options: ChoiceOverridePropertyOptions<DiskStyle>(
+            options: [
+              (option: .concentric, title: "Concentric"),
+              (option: .simple, title: "Simple"),
+              (option: .face, title: "Face"),
+            ],
+          ),
+        ),
         buildModeTile(
           title: "Outer radius",
           property: configOverride.outerRadius,
@@ -578,7 +598,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             dimension: 600,
                             child: switch (_renderer) {
                               .canvas => CustomPaint(
-                                painter: _MarkPainter(TavolaraMark(config: _config, style: _style)),
+                                painter: MarkPainter(TavolaraMark(config: _config, style: _style)),
                               ),
                               .p5 => HtmlElementView.fromTagName(
                                 tagName: 'div',
@@ -876,10 +896,10 @@ class _ScaleBox extends StatelessWidget {
   }
 }
 
-class _MarkPainter extends CustomPainter {
+class MarkPainter extends CustomPainter {
   final TavolaraMark mark;
 
-  const _MarkPainter(this.mark);
+  const MarkPainter(this.mark);
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -209,7 +209,7 @@ class TavolaraMark {
 
     switch (eyeStyle) {
       case .almond:
-        surface.setStroke(style, .thin);
+        surface.setStroke(style, .thick);
 
         surface.beginShape();
         surface.vertex(-14, 0);
@@ -221,6 +221,7 @@ class TavolaraMark {
       case .concentric:
         surface.setStroke(style, .thin);
         surface.circle(0, 0, 6);
+        surface.setStroke(style, .thick);
         surface.circle(0, 0, 15);
       case .dot:
         surface.setStroke(style, .thickest);
@@ -234,7 +235,7 @@ class TavolaraMark {
     surface.push();
     surface.translate(x, y);
 
-    surface.setStroke(style, .thin);
+    surface.setStroke(style, .thick);
 
     switch (mouthStyle) {
       case .elliptical:
@@ -246,6 +247,7 @@ class TavolaraMark {
         surface.bezierVertex(-14, 9, -22, 0, -22, 0);
         surface.endShape(close: true);
 
+        surface.setStroke(style, .thin);
         surface.line(-22, 0, 22, 0);
       case .rectangular:
         surface.beginShape();
@@ -255,6 +257,7 @@ class TavolaraMark {
         surface.vertex(-26, 9);
         surface.endShape(close: true);
 
+        surface.setStroke(style, .thin);
         surface.line(-26, 0, 26, 0);
       case .line:
         surface.beginShape();
@@ -262,7 +265,9 @@ class TavolaraMark {
         surface.vertex(18, 0);
         surface.endShape();
       case .concentric:
+        surface.setStroke(style, .thin);
         surface.circle(0, 0, 5);
+        surface.setStroke(style, .thick);
         surface.circle(0, 0, 13);
       case .smiling:
         surface.beginShape();
@@ -272,6 +277,7 @@ class TavolaraMark {
         surface.bezierVertex(22.14, 4.76, 25.67, -1.33, 26, -8);
         surface.endShape(close: true);
 
+        surface.setStroke(style, .thin);
         surface.line(-23.97, 0, 23.97, 0);
     }
 
@@ -284,7 +290,7 @@ class TavolaraMark {
 
     surface.beginShape();
 
-    surface.setStroke(style, .thicker);
+    surface.setStroke(style, .thick);
 
     switch (noseStyle) {
       case .eagled:
