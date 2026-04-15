@@ -15,6 +15,8 @@ class Style {
   const Style({required this.backgroundColor, required this.color, required this.strokeClasses});
 }
 
+enum DiskStyle { concentric, simple, face }
+
 enum PetalStyle { spikes, narrowSpikes, sharp }
 
 enum SepalStyle { none, dots, mandala }
@@ -67,12 +69,14 @@ class Configuration {
     required double size,
     ConfigurationOverride? override,
   }) {
-    final coreStyle = random.nextInt(3);
-    final diskConfig = switch (coreStyle) {
-      0 => ConcentricDiskConfiguration.fromRandom(random, override),
-      1 => SimpleDiskConfiguration.fromRandom(random, override),
-      2 => FaceDiskConfiguration.fromRandom(random, override),
-      _ => throw UnimplementedError(),
+    final diskStyle = withOverride(
+      DiskStyle.values[random.nextInt(DiskStyle.values.length)],
+      override?.diskStyle,
+    );
+    final diskConfig = switch (diskStyle) {
+      .concentric => ConcentricDiskConfiguration.fromRandom(random, override),
+      .simple => SimpleDiskConfiguration.fromRandom(random, override),
+      .face => FaceDiskConfiguration.fromRandom(random, override),
     };
 
     final petalStyle = withOverride(
@@ -194,7 +198,7 @@ class OverrideProperty<T extends Object> {
 }
 
 class ConfigurationOverride {
-  // final OverrideProperty<CoreConfiguration> coreConfig;
+  final OverrideProperty<DiskStyle> diskStyle;
   final OverrideProperty<double> outerRadius;
   final OverrideProperty<PetalStyle> petalStyle;
   final OverrideProperty<bool> generateStarRing;
@@ -212,7 +216,7 @@ class ConfigurationOverride {
   final OverrideProperty<double> haloRotation;
 
   ConfigurationOverride({
-    // OverrideProperty<CoreConfiguration>? coreConfig,
+    OverrideProperty<DiskStyle>? diskStyle,
     OverrideProperty<double>? outerRadius,
     OverrideProperty<PetalStyle>? petalStyle,
     OverrideProperty<bool>? doubleOutline,
@@ -228,7 +232,8 @@ class ConfigurationOverride {
     OverrideProperty<HaloStyle>? haloStyle,
     OverrideProperty<int>? haloElementCount,
     OverrideProperty<double>? haloRotation,
-  }) : outerRadius = outerRadius ?? .new(value: 0),
+  }) : diskStyle = diskStyle ?? .new(value: .concentric),
+       outerRadius = outerRadius ?? .new(value: 0),
        petalStyle = petalStyle ?? .new(value: .spikes),
        generateStarRing = generateStarRing ?? .new(value: false),
        petalCount = starPoints ?? .new(value: 3),
@@ -245,7 +250,7 @@ class ConfigurationOverride {
   Configuration patch(Configuration other) {
     return Configuration(
       size: other.size,
-      diskConfig: /* coreConfig.mode == .patch ? coreConfig.value :  */ other.diskConfig,
+      diskConfig: other.diskConfig,
       petalStyle: petalStyle.mode == .patch ? petalStyle.value : other.petalStyle,
       generatePetalRing: generateStarRing.mode == .patch
           ? generateStarRing.value
@@ -273,7 +278,7 @@ class ConfigurationOverride {
 
   OverrideProperty? byName(String name) {
     return switch (name) {
-      'diskConfig' => null,
+      'diskStyle' => diskStyle,
       'petalStyle' => petalStyle,
       'starPoints' => petalCount,
       'starOuterRadius' => petalOuterRadius,

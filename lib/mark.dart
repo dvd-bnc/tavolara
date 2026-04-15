@@ -370,14 +370,10 @@ class TavolaraMark {
     surface.endClip();
 
     if (config.petalStyle == .narrowSpikes) {
+      surface.strokeOff(style);
       surface.fillOn(style);
     } else {
       surface.fillOff(style);
-    }
-
-    if (config.petalStyle == .narrowSpikes) {
-      surface.strokeOff(style);
-    } else {
       surface.strokeOn(style, .thick);
 
       if (config.petalStyle == .spikes && config.petalCount >= 8) {

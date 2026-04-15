@@ -230,32 +230,14 @@ class CanvasSurface implements Surface {
     }
   }
 
-  int clipCount = 0;
-
   @override
   void endClip() {
-    print(_clipPath.getBounds());
-    final builtClipPath = _invertClip
-        ? Path.combine(
-            .difference,
-            Path()..addRect(Rect.fromLTRB(-9999, -9999, 9999, 9999)),
-            _clipPath,
-          )
-        : _clipPath;
-    // _clipPath.addRect(Rect.fromLTWH(-9999, -9999, 9999 * 2, 9999 * 2));
-    // canvas.clipPath(_clipPath);
-    canvas.drawPath(
-      builtClipPath,
-      Paint()
-        ..color = Color.fromARGB(
-          80,
-          clipCount % 3 == 0 ? 255 : 0,
-          clipCount % 3 == 1 ? 255 : 0,
-          clipCount % 3 == 2 ? 255 : 0,
-        ),
-    );
-    clipCount += 1;
-    // canvas.clipPath(builtClipPath);
+    if (_invertClip) {
+      _clipPath
+        ..addRect(Rect.fromLTRB(-9999, -9999, 9999, 9999))
+        ..fillType = PathFillType.evenOdd;
+    }
+    canvas.clipPath(_clipPath);
     _buildClip = false;
   }
 
@@ -290,7 +272,7 @@ class CanvasSurface implements Surface {
       return;
     }
 
-    if (_pointMode == .polygon && _shapePoints.any((e) => e is _BezierCommand)) {
+    if (_pointMode == .polygon) {
       final path = Path();
       var init = false;
       for (final point in _shapePoints) {
