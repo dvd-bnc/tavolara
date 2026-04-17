@@ -29,7 +29,7 @@ jobs:
         run: flutter build web --release --dart-define-from-file .env
 
       - name: Inject CNAME
-        run: cat "tavolara.dvdbnc.dev" > build/web/CNAME
+        run: echo "tavolara.dvdbnc.dev" > build/web/CNAME
 
       - name: Push
         uses: s0/git-publish-subdir-action@develop
