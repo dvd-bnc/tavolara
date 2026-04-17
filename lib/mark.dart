@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
 import 'package:tavolara/bindings.dart';
 import 'package:tavolara/config.dart';
 import 'package:tavolara/surface.dart';
@@ -10,6 +11,21 @@ import 'package:web/web.dart' as web;
 // petal
 // sepal
 // halo
+
+int stringToSeed(String str) {
+  return str.hashCode;
+}
+
+String phraseGenerator([int? length, math.Random? random]) {
+  final r = random ?? math.Random();
+  final alphabet = [
+    for (int i = 65; i < 90; i++) String.fromCharCode(i),
+    for (int i = 97; i < 122; i++) String.fromCharCode(i),
+    for (int i = 48; i < 57; i++) String.fromCharCode(i),
+  ];
+
+  return [for (int i = 0; i < (length ?? 32); i++) alphabet[r.nextInt(alphabet.length)]].join();
+}
 
 class TavolaraSketch {
   late final P5 p5;
@@ -66,15 +82,15 @@ class TavolaraMark {
   void buildDefaultMark(Surface surface, num x, num y, num size) {
     surface.push();
 
-    surface.beginClip();
-    surface.circle(size / 2, size / 2, size);
-    surface.endClip();
+    surface.translate(x + size / 2, y + size / 2);
 
     if (surface case final P5Surface p5surface) {
       p5surface.p5.ellipseMode(p5surface.p5.RADIUS);
     }
 
-    surface.translate(x + size / 2, y + size / 2);
+    surface.beginClip();
+    surface.circle(0, 0, size / 2);
+    surface.endClip();
 
     surface.fill(style.backgroundColor);
     surface.noStroke();

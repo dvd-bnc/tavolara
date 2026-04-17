@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
+import 'package:file_saver/file_saver.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +9,19 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:tavolara/config.dart';
 import 'package:tavolara/mark.dart';
 import 'package:tavolara/surface.dart';
 import 'package:tavolara/survey.dart';
-import 'package:web/web.dart' as web;
+import 'package:tavolara/widgets.dart';
 
-void main() {
+void main() async {
   usePathUrlStrategy();
-  runApp(const MyApp());
+  await SentryFlutter.init((options) {
+    options.dsn =
+        'https://5e78b7b1d64cdfa3e420724f4f42fb2f@o4511235817078784.ingest.de.sentry.io/4511235818717265';
+  }, appRunner: () => runApp(SentryWidget(child: MyApp())));
 }
 
 class MyApp extends StatelessWidget {
@@ -104,19 +110,17 @@ enum SizeVariant {
   const SizeVariant(this.size);
 }
 
-enum Renderer { canvas, p5 }
-
 class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateMixin {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  Renderer _renderer = .p5;
+  MarkRenderer renderer = .p5;
 
   SizeVariant sizeVariant = .full;
+  final markController = MarkController();
   final seedController = TextEditingController();
   var backgroundColor = Colors.black;
   var foregroundColor = Colors.white;
 
-  late TavolaraSketch sketch;
   final configOverride = ConfigurationOverride();
 
   bool showConfigPane = false;
@@ -140,27 +144,19 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
     }
   }
 
-  Style get _style => Style(
+  Style get style => Style(
     backgroundColor: backgroundColor,
     color: foregroundColor,
-    strokeClasses: {.thinner: 2, .thin: 4, .thick: 6, .thicker: 8, .thickest: 10},
+    strokeClasses: {.thinner: 3, .thin: 4, .thick: 6, .thicker: 8, .thickest: 10},
   );
 
-  Configuration get _config => configOverride.patch(
+  Configuration get config => configOverride.patch(
     Configuration.fromRandom(
-      random: Random(seedController.text.hashCode),
+      random: Random(stringToSeed(seedController.text)),
       size: 200,
       override: configOverride,
     ),
   );
-
-  void _updateStyle() {
-    sketch.updateStyle(_style);
-  }
-
-  void _updateConfiguration() {
-    sketch.updateConfiguration(_config);
-  }
 
   void toggleConfigurationDrawer([bool? state]) {
     setState(() => showConfigPane = state ?? !showConfigPane);
@@ -203,7 +199,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
               selected: {property.mode},
               onSelectionChanged: (p0) {
                 setState(() => property.mode = p0.single);
-                _updateConfiguration();
               },
             ),
           ),
@@ -214,7 +209,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
             onChanged: property.mode != .none
                 ? (v) {
                     setState(() => property.value = v as T);
-                    _updateConfiguration();
                   }
                 : null,
             min: min,
@@ -225,7 +219,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
             onChanged: property.mode != .none
                 ? (v) {
                     setState(() => property.value = v.toInt() as T);
-                    _updateConfiguration();
                   }
                 : null,
             min: min.toDouble(),
@@ -235,7 +228,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
           ChoiceOverridePropertyOptions<Enum>(:final options) => RadioGroup<T>(
             onChanged: (v) {
               setState(() => property.value = v!);
-              _updateConfiguration();
             },
             groupValue: property.value,
             child: Column(
@@ -255,7 +247,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
             onChanged: property.mode != .none
                 ? (v) {
                     setState(() => property.value = v as T);
-                    _updateConfiguration();
                   }
                 : null,
           ),
@@ -286,7 +277,7 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
       padding: .fromLTRB(0, 16, 8, 16),
       children: [
         buildHeader("Configuration"),
-        for (final entry in _config.describe().entries)
+        for (final entry in config.describe().entries)
           Padding(
             padding: .symmetric(horizontal: 16),
             child: Text.rich(
@@ -312,22 +303,21 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
             ),
           ),
         buildHeader("Renderer"),
-        RadioGroup<Renderer>(
+        RadioGroup<MarkRenderer>(
           onChanged: (v) {
-            setState(() => _renderer = v!);
-            _updateConfiguration();
+            setState(() => renderer = v!);
           },
-          groupValue: _renderer,
+          groupValue: renderer,
           child: Column(
             children: [
-              for (final option in Renderer.values)
-                RadioListTile<Renderer>(title: Text(option.name), value: option),
+              for (final option in MarkRenderer.values)
+                RadioListTile<MarkRenderer>(title: Text(option.name), value: option),
             ],
           ),
         ),
         buildHeader("Disk"),
         buildModeTile(
-          title: "Style",
+          title: "Disk style",
           property: configOverride.diskStyle,
           options: ChoiceOverridePropertyOptions<DiskStyle>(
             options: [
@@ -445,7 +435,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
               enableTonalPalette: false,
             );
             setState(() => backgroundColor = color);
-            _updateStyle();
           },
           trailing: SizedBox.square(
             dimension: 32,
@@ -468,7 +457,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
               enableTonalPalette: false,
             );
             setState(() => foregroundColor = color);
-            _updateStyle();
           },
           trailing: SizedBox.square(
             dimension: 32,
@@ -539,8 +527,12 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
               backgroundColor: Colors.transparent,
             )
           : null,
-      drawer: breakpoints.isMobile ? Drawer(width: 360, child: configurationDrawer) : null,
-      endDrawer: breakpoints.isMobile ? Drawer(width: 360, child: styleDrawer) : null,
+      drawer: breakpoints.isMobile
+          ? Drawer(width: min(360, MediaQuery.widthOf(context) / 5 * 4), child: configurationDrawer)
+          : null,
+      endDrawer: breakpoints.isMobile
+          ? Drawer(width: min(360, MediaQuery.widthOf(context) / 5 * 4), child: styleDrawer)
+          : null,
       onDrawerChanged: (isOpened) => toggleConfigurationDrawer(isOpened),
       onEndDrawerChanged: (isOpened) => toggleStyleDrawer(isOpened),
       body: Row(
@@ -583,41 +575,14 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
                   ),
                 ),
                 Center(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Transform.scale(
-                        scale:
-                            min(min(constraints.maxWidth, constraints.maxHeight) - 32, 600) /
-                            600 *
-                            sizeVariant.size,
-                        child: OverflowBox(
-                          fit: .deferToChild,
-                          maxWidth: .infinity,
-                          maxHeight: .infinity,
-                          child: SizedBox.square(
-                            dimension: 600,
-                            child: switch (_renderer) {
-                              .canvas => CustomPaint(
-                                painter: MarkPainter(TavolaraMark(config: _config, style: _style)),
-                              ),
-                              .p5 => HtmlElementView.fromTagName(
-                                tagName: 'div',
-                                onElementCreated: (element) {
-                                  final div = element as web.HTMLDivElement;
-
-                                  div
-                                    ..style.width = '100%'
-                                    ..style.height = '100%';
-
-                                  sketch = TavolaraSketch(size: 600, parent: div);
-                                  sketch.bootstrap(_config, _style);
-                                },
-                              ),
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints.loose(Size.square(600 * sizeVariant.size)),
+                    child: MarkWidget(
+                      configuration: config,
+                      style: style,
+                      renderer: renderer,
+                      controller: markController,
+                    ),
                   ),
                 ),
                 if (breakpoints.isDesktop)
@@ -700,7 +665,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
                                       enableTonalPalette: false,
                                     );
                                     setState(() => backgroundColor = color);
-                                    _updateStyle();
                                   },
                                 ),
                               ),
@@ -732,7 +696,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
                                       enableTonalPalette: false,
                                     );
                                     setState(() => foregroundColor = color);
-                                    _updateStyle();
                                   },
                                 ),
                               ),
@@ -816,7 +779,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
             decoration: InputDecoration(labelText: 'Phrase'),
             onChanged: (value) {
               setState(() {});
-              _updateConfiguration();
             },
           ),
         ),
@@ -835,7 +797,6 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
             ].join();
 
             setState(() => seedController.text = str);
-            _updateConfiguration();
           },
           icon: const Icon(Icons.casino),
         ),
@@ -851,12 +812,77 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
         if (kDebugMode)
           FloatingActionButton.small(
             tooltip: "Refresh sketch",
-            onPressed: () => sketch.p5.redraw(),
+            onPressed: () => markController.refresh(),
             child: const Icon(Icons.refresh),
+          ),
+        if (kDebugMode)
+          FloatingActionButton.small(
+            tooltip: "Generate pattern",
+            onPressed: () async {
+              const width = 4096;
+              const height = 2304;
+              const size = 320;
+
+              final recorder = ui.PictureRecorder();
+              final canvas = Canvas(
+                recorder,
+                Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+              );
+
+              canvas.drawColor(backgroundColor, .srcOver);
+
+              final surface = CanvasSurface(canvas);
+
+              final xCenterOffset =
+                  ((size * (width / size).ceil() + 8 * ((width / size).ceil() - 1)) - width) / 2;
+
+              final yCenterOffset = ((size * (height / size).ceil()) - height) / 2;
+
+              for (int y = 0; y < (height / size); y++) {
+                for (int x = 0; x < (width / size) + (y % 2 == 1 ? 1 : 0); x++) {
+                  final mark = TavolaraMark(
+                    style: style,
+                    config: Configuration.fromRandom(
+                      random: Random(stringToSeed(phraseGenerator())),
+                      size: 200,
+                    ),
+                  );
+                  mark.buildDefaultMark(
+                    surface,
+                    x * size +
+                        (max(0, x - 1) * 8) -
+                        (y % 2 == 1 ? size / 2 + 4 : 0) -
+                        xCenterOffset,
+                    y * size - yCenterOffset,
+                    size,
+                  );
+                }
+              }
+
+              final picture = recorder.endRecording();
+              final image = await picture.toImage(width, height);
+              final png = await image.toByteData(format: .png);
+              final pngBytes = png!.buffer.asUint8List();
+
+              await FileSaver.instance.saveFile(
+                name: "pattern",
+                bytes: pngBytes,
+                fileExtension: "png",
+                mimeType: .png,
+              );
+            },
+            child: const Icon(Icons.grid_4x4),
           ),
         FloatingActionButton(
           tooltip: "Download logo (SVG)",
-          onPressed: () => sketch.save(seedController.text),
+          onPressed: () async {
+            await saveMark(
+              name: seedController.text,
+              format: .basicPng,
+              configuration: config,
+              style: style,
+            );
+          },
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           child: const Icon(Icons.download),
@@ -893,21 +919,5 @@ class _ScaleBox extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class MarkPainter extends CustomPainter {
-  final TavolaraMark mark;
-
-  const MarkPainter(this.mark);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    mark.buildDefaultMark(CanvasSurface(canvas), 0, 0, size.width);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
   }
 }

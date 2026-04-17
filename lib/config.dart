@@ -13,6 +13,19 @@ class Style {
   final Map<StrokeClass, double> strokeClasses;
 
   const Style({required this.backgroundColor, required this.color, required this.strokeClasses});
+
+  @override
+  int get hashCode => Object.hash(backgroundColor, color, strokeClasses);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Style) return false;
+    if (identical(this, other)) return true;
+
+    return backgroundColor == other.backgroundColor &&
+        color == other.color &&
+        strokeClasses == other.strokeClasses;
+  }
 }
 
 enum DiskStyle { concentric, simple, face }
@@ -158,6 +171,45 @@ class Configuration {
   }
 
   double get starInnerRadius => diskConfig.radius + petalDiskDistance;
+
+  @override
+  int get hashCode => Object.hash(
+    size,
+    diskConfig,
+    petalStyle,
+    petalCount,
+    petalOuterRadius,
+    petalDiskDistance,
+    petalAngle,
+    generatePetalRing,
+    sepalStyle,
+    sepalDistanceOffset,
+    sepalDotsSize,
+    haloStyle,
+    haloElementCount,
+    haloRotation,
+  );
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Configuration) return false;
+    if (identical(this, other)) return true;
+
+    return size == other.size &&
+        diskConfig == other.diskConfig &&
+        petalStyle == other.petalStyle &&
+        petalCount == other.petalCount &&
+        petalOuterRadius == other.petalOuterRadius &&
+        petalDiskDistance == other.petalDiskDistance &&
+        petalAngle == other.petalAngle &&
+        generatePetalRing == other.generatePetalRing &&
+        sepalStyle == other.sepalStyle &&
+        sepalDistanceOffset == other.sepalDistanceOffset &&
+        sepalDotsSize == other.sepalDotsSize &&
+        haloStyle == other.haloStyle &&
+        haloElementCount == other.haloElementCount &&
+        haloRotation == other.haloRotation;
+  }
 }
 
 enum OverrideMode { none, override, patch }
@@ -340,6 +392,21 @@ class ConcentricDiskConfiguration extends DiskConfiguration {
       rotation: rotation,
     );
   }
+
+  @override
+  int get hashCode => Object.hash(radius, innerRadius, decoration, elementAmount, rotation);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! ConcentricDiskConfiguration) return false;
+    if (identical(this, other)) return true;
+
+    return radius == other.radius &&
+        innerRadius == other.innerRadius &&
+        decoration == other.decoration &&
+        elementAmount == other.elementAmount &&
+        rotation == other.rotation;
+  }
 }
 
 class SimpleDiskConfiguration extends DiskConfiguration {
@@ -350,6 +417,17 @@ class SimpleDiskConfiguration extends DiskConfiguration {
       radius: withOverride(random.nextDoubleRange(30, 50), override?.outerRadius),
     );
   }
+
+  @override
+  int get hashCode => Object.hashAll([radius]);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! SimpleDiskConfiguration) return false;
+    if (identical(this, other)) return true;
+
+    return radius == other.radius;
+  }
 }
 
 enum FaceDiskEyeStyle { almond, concentric, dot }
@@ -358,11 +436,7 @@ enum FaceDiskMouthStyle { elliptical, rectangular, line, concentric, smiling }
 
 enum FaceDiskNoseStyle { eagled, straight, rounded, wide, winking }
 
-class FaceDiskCheekStyle {
-  final int value;
-
-  const FaceDiskCheekStyle._(this.value);
-
+extension type const FaceDiskCheekStyle._(int value) {
   static const FaceDiskCheekStyle none = FaceDiskCheekStyle._(1);
   static const FaceDiskCheekStyle circular = FaceDiskCheekStyle._(2);
 
@@ -409,6 +483,24 @@ class FaceDiskConfiguration extends DiskConfiguration {
       cheekVariance: cheekVariance,
       eyeVariance: eyeVariance,
     );
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(radius, eyeStyle, mouthStyle, noseStyle, cheekStyle, cheekVariance, eyeVariance);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! FaceDiskConfiguration) return false;
+    if (identical(this, other)) return true;
+
+    return radius == other.radius &&
+        eyeStyle == other.eyeStyle &&
+        mouthStyle == other.mouthStyle &&
+        noseStyle == other.noseStyle &&
+        cheekStyle == other.cheekStyle &&
+        cheekVariance == other.cheekVariance &&
+        eyeVariance == other.eyeVariance;
   }
 }
 
