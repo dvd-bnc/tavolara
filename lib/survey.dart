@@ -38,7 +38,7 @@ class _SurveyPageState extends State<SurveyPage> {
           final feedback = SentryFeedback(
             name: _computeHash(_validPass!),
             message:
-                "selectedMarks: \"${data.selectedMarks.map((e) => '"$e"').join(",")}\"\nfavoriteMark: \"${data.favoriteMark}\"\nmessage:\n${data.comment}",
+                "selectedMarks: \"${data.selectedMarks.join(",")}\"\nfavoriteMark: \"${data.favoriteMark}\"\nmessage: \"${data.comment}\"",
           );
           Sentry.captureFeedback(feedback);
           setState(() => _data = data);
