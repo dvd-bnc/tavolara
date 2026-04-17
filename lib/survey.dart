@@ -36,7 +36,7 @@ class _SurveyPageState extends State<SurveyPage> {
       return _SurveyFormPage(
         onFormSubmit: (data) {
           const token = String.fromEnvironment("GITHUB_TOKEN");
-          var github = GitHub(auth: Authentication.withToken(token));
+          var github = GitHub(auth: Authentication.withToken(utf8.decode(base64Decode(token))));
           github.issues.create(
             RepositorySlug('dvd-bnc', 'tavolara'),
             IssueRequest(
