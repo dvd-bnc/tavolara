@@ -544,7 +544,7 @@ class _GeneratorPageState extends State<GeneratorPage> with TickerProviderStateM
                 curve: Easing.standardDecelerate,
                 reverseCurve: Easing.emphasizedAccelerate,
               ),
-              alignment: .centerEnd,
+              axisAlignment: 1,
               axis: .horizontal,
               child: Drawer(
                 width: MediaQuery.of(context).size.width / 4,
