@@ -9,7 +9,6 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:tavolara/config.dart';
 import 'package:tavolara/mark.dart';
 import 'package:tavolara/surface.dart';
@@ -18,14 +17,7 @@ import 'package:tavolara/widgets.dart';
 
 void main() async {
   usePathUrlStrategy();
-  await SentryFlutter.init(
-    (options) {
-      options.dsn =
-          'https://5e78b7b1d64cdfa3e420724f4f42fb2f@o4511235817078784.ingest.de.sentry.io/4511235818717265';
-      options.sendDefaultPii = true;
-    },
-    appRunner: () => runApp(SentryWidget(child: MyApp())), //
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

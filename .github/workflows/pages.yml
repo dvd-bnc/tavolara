@@ -18,11 +18,18 @@ jobs:
           channel: stable
         name: Set up Flutter
 
+      - run: echo $FLUTTER_SECRETS | base64 -d > .env
+        env:
+          FLUTTER_SECRETS: ${{ secrets.FLUTTER_SECRETS }}
+
       - name: Get dependencies
         run: flutter pub get && flutter pub upgrade
 
       - name: Build
-        run: flutter build web --release
+        run: flutter build web --release --dart-define-from-file .env
+
+      - name: Inject CNAME
+        run: cat "tavolara.dvdbnc.dev" > build/web/CNAME
 
       - name: Push
         uses: s0/git-publish-subdir-action@develop

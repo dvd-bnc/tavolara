@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:github/github.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:tavolara/config.dart';
 import 'package:tavolara/mark.dart';
 import 'package:tavolara/widgets.dart';
@@ -35,12 +35,16 @@ class _SurveyPageState extends State<SurveyPage> {
     if (_data == null) {
       return _SurveyFormPage(
         onFormSubmit: (data) {
-          final feedback = SentryFeedback(
-            name: _computeHash(_validPass!),
-            message:
-                "selectedMarks: \"${data.selectedMarks.join(",")}\"\nfavoriteMark: \"${data.favoriteMark}\"\nmessage: \"${data.comment}\"",
+          const token = String.fromEnvironment("GITHUB_TOKEN");
+          var github = GitHub(auth: Authentication.withToken(token));
+          github.issues.create(
+            RepositorySlug('dvd-bnc', 'tavolara'),
+            IssueRequest(
+              title: "Survey response from ${_computeHash(_validPass!)}",
+              body:
+                  "selectedMarks: \"${data.selectedMarks.join(",")}\"\nfavoriteMark: \"${data.favoriteMark}\"\nmessage: \"${data.comment}\"",
+            ),
           );
-          Sentry.captureFeedback(feedback);
           setState(() => _data = data);
         },
       );
