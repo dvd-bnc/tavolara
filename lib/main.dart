@@ -18,10 +18,14 @@ import 'package:tavolara/widgets.dart';
 
 void main() async {
   usePathUrlStrategy();
-  await SentryFlutter.init((options) {
-    options.dsn =
-        'https://5e78b7b1d64cdfa3e420724f4f42fb2f@o4511235817078784.ingest.de.sentry.io/4511235818717265';
-  }, appRunner: () => runApp(SentryWidget(child: MyApp())));
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://5e78b7b1d64cdfa3e420724f4f42fb2f@o4511235817078784.ingest.de.sentry.io/4511235818717265';
+      options.sendDefaultPii = true;
+    },
+    appRunner: () => runApp(SentryWidget(child: MyApp())), //
+  );
 }
 
 class MyApp extends StatelessWidget {
