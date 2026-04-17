@@ -10,7 +10,9 @@ import 'package:tavolara/mark.dart';
 import 'package:tavolara/widgets.dart';
 
 class SurveyPage extends StatefulWidget {
-  const SurveyPage({super.key});
+  final String? pass;
+
+  const SurveyPage({this.pass, super.key});
 
   @override
   State<SurveyPage> createState() => _SurveyPageState();
@@ -22,6 +24,10 @@ class _SurveyPageState extends State<SurveyPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.pass != null && _validHashes.contains(_computeHash(widget.pass!))) {
+      _validPass = widget.pass!;
+    }
+
     if (_validPass == null || !_validHashes.contains(_computeHash(_validPass!))) {
       return _SurveyGatePage(onPassSuccess: (pass) => setState(() => _validPass = pass));
     }

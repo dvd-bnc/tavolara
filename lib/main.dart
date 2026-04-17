@@ -87,7 +87,16 @@ class MyApp extends StatelessWidget {
 
 final _router = GoRouter(
   routes: [
-    GoRoute(path: '/', builder: (context, state) => GeneratorPage()),
+    GoRoute(
+      path: '/',
+      builder: (context, state) {
+        if (state.uri.queryParameters['sur_k'] case final surveyKey?) {
+          return SurveyPage(pass: surveyKey);
+        }
+
+        return GeneratorPage();
+      },
+    ),
     GoRoute(path: '/survey', builder: (context, state) => SurveyPage()),
   ],
 );
